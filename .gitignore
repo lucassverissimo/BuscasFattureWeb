@@ -227,3 +227,14 @@ AppPackages/
 
 **/APLICACAO/*
 /TestesFWConsoleApplication/FattureWebAuxiliar/appsettings.json
+
+### Exemplo appsettings
+#{
+#  "Settings": {
+#    "UsuarioProducao": "",
+#    "SenhaProducao": "",
+#    "UsuarioTeste": "",
+#    "SenhaTeste": ""
+#  }
+#}
+###
