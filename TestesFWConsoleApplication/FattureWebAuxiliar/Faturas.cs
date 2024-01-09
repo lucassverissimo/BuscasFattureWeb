@@ -522,17 +522,6 @@ void SaldoEmMeses(List<Dado> dados)
             x => Console.WriteLine($"Fatura {x.Item1} | Saldo em meses: {x.Item5} | UC : {x.Item2}")
         );
 }
-
-void cabecalho()
-{
-    Console.WriteLine(" ************************************************** ");
-    if (_isprod)
-        Console.WriteLine(" ******************** FW -> BASE PRODUÇÃO ******************** ");
-    else
-        Console.WriteLine(" ******************** FW -> BASE TESTE  ********************* ");
-    Console.WriteLine(" ************************************************** ");
-    pularLinha(2);
-}
 static void pularLinha(int qtd = 1)
 {
     for (int i = 0; i < qtd; i++)
