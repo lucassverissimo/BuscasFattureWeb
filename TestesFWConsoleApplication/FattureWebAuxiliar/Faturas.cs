@@ -8,25 +8,9 @@ const bool S = true;
 const bool N = false;
 
 bool _isprod = N;
-var metodos = new List<(string, bool)>
-{
-    ("mostraFaturasMuc", N),
-    ("mostraTodosProdutos", N),
-    ("mostraModelosFaturas", N),
-    ("mostraSaldoAcumuladoMaiorQueZero", N),
-    ("mostraTributosNegativos", N),
-    ("saldoEmMeses", N),
-};
 
 #region programa
 
-/*if (!metodos.Any(x => x.Item2))
-{
-    Console.WriteLine("NENHUM MÉTODO ATIVADO");
-    return;
-}*/
-
-//cabecalho();
 
 var token = await realizarLoginAsync();
 if (string.IsNullOrEmpty(token))
@@ -145,42 +129,6 @@ while (continuar)
     Console.WriteLine(" >>> Pressione Qualquer Tecla <<< ");
     Console.ReadKey(false);
     Console.Clear();
-}
-
-if (metodos.Where(x => x.Item1 == "mostraTodosProdutos").FirstOrDefault().Item2)
-{
-    todosProdutos(dados);
-    pularLinha(3);
-}
-
-if (metodos.Where(x => x.Item1 == "mostraFaturasMuc").FirstOrDefault().Item2)
-{
-    faturasMuc(dados);
-    pularLinha(3);
-}
-
-if (metodos.Where(x => x.Item1 == "mostraModelosFaturas").FirstOrDefault().Item2)
-{
-    modelosFaturas(dados);
-    pularLinha(3);
-}
-
-if (metodos.Where(x => x.Item1 == "mostraSaldoAcumuladoMaiorQueZero").FirstOrDefault().Item2)
-{
-    SaldosAcumulados(dados);
-    pularLinha(3);
-}
-
-if (metodos.Where(x => x.Item1 == "mostraTributosNegativos").FirstOrDefault().Item2)
-{
-    TributosNegativos(dados);
-    pularLinha(3);
-}
-
-if (metodos.Where(x => x.Item1 == "saldoEmMeses").FirstOrDefault().Item2)
-{
-    SaldoEmMeses(dados);
-    pularLinha(3);
 }
 
 #endregion
@@ -576,12 +524,3 @@ static void pularLinha(int qtd = 1)
         Console.WriteLine("\n");
 }
 #endregion
-
-/*DateTime fim = DateTime.Now;
-DateTime inicio = DateTime.Parse("08/01/2008");
-
-TimeSpan ts = fim.Subtract(inicio);
-DateTime periodo = new DateTime(ts.Ticks);
-
-Console.WriteLine("Anos: {0}  Meses: {1}  Dias: {2}", periodo.Year - 1, periodo.Month, periodo.Day);
-*/
