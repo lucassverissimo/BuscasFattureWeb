@@ -1,4 +1,4 @@
-Para funcionar, criar o arquivo appsettings com informação de login e senha do fattureweb.
+> 1 - criar o arquivo appsettings dentro do diretório "TestesFWConsoleApplication\FattureWebAuxiliar" com informação de login e senha do fattureweb.
 ```json
 {
   "Settings": {
@@ -9,3 +9,5 @@ Para funcionar, criar o arquivo appsettings com informação de login e senha do
   }
 }
 ```
+
+> 2 - Nas propriedades do arquivo appsettings setar o atributo "Copy to Output Directory" para "Copy always"
