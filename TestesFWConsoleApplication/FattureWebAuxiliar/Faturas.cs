@@ -2,12 +2,27 @@
 using System.Diagnostics.Metrics;
 using System.Text.Json;
 using FattureWebAuxiliar;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
 
 const bool S = true;
 const bool N = false;
 
 bool _isprod = N;
+
+// Build a config object, using env vars and JSON providers.
+IConfigurationRoot config = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json")
+    .AddEnvironmentVariables()
+    .Build();
+
+// Get values from the config given their key and their target type.
+var settings = config.GetRequiredSection("Settings").Get<Settings>();
+
+var _LOGINPROD = settings?.UsuarioProducao;
+var _SENHAPROD = settings?.SenhaProducao;
+var _LOGINTESTE = settings?.UsuarioTeste;
+var _SENHATESTE = settings?.SenhaTeste;
 
 #region programa
 
@@ -140,8 +155,8 @@ async Task<string?> realizarLoginAsync()
     var requestToken = new HttpRequestMessage(HttpMethod.Post, Constants.URLFW_LOGIN);
     var jsonRequestToken = new JObject
     {
-        { "email", _isprod ? Constants.LOGINPROD : Constants.LOGINTESTE },
-        { "senha", _isprod ? Constants.SENHAPROD : Constants.SENHATESTE }
+        { "email", _isprod ? _LOGINPROD : _LOGINTESTE },
+        { "senha", _isprod ? _SENHAPROD : _SENHATESTE }
     };
     var contentToken = new StringContent(jsonRequestToken.ToString(), null, "application/json");
     requestToken.Content = contentToken;
