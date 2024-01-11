@@ -12,17 +12,5 @@ namespace FattureWebAuxiliar
         {
             return Math.Round(value, qtdCasas);
         }
-
-        public static decimal? ToFixed(this decimal? value, int qtdCasas)
-        {
-            if (value.HasValue)
-            {
-                return Math.Round(value.Value, qtdCasas);
-            }
-            else
-            {
-                return null;
-            }
-        }
     }
 }
