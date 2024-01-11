@@ -126,7 +126,7 @@ while (continuar)
                     TributosNegativos(dados);
                     break;
                 case "6":
-                    SaldoEmMeses(dados);
+                    await SaldoEmMeses(dados, verificaComPRod: false);
                     break;
                 default:
                     Console.WriteLine(" >>> OPÇÃO INVÁLIDA <<< ");
@@ -465,12 +465,13 @@ void TributosNegativos(List<Dado> dados)
         .ForEach(x => Console.WriteLine($"Fatura {x.Item1}: {x.Item2}"));
 }
 
-void SaldoEmMeses(List<Dado> dados)
+async Task SaldoEmMeses(List<Dado> dados, bool verificaComPRod)
 {
     Console.WriteLine(" ************************************************************* ");
     Console.WriteLine(" *************** Saldo em Meses *************** ");
     Console.WriteLine(" ************************************************************* ");
-    var faturasComMediaDeConsumoZerado = new List<(string, string, string, string, string)>();
+    var faturasComMediaDeConsumoZerado =
+        new List<(string, string, string, string, string, string, string, string)>();
     foreach (var item in dados)
     {
         if (item.Conteudo != null)
@@ -505,9 +506,12 @@ void SaldoEmMeses(List<Dado> dados)
                             (
                                 (item.Id.HasValue ? item.Id.Value.ToString() : "NONE"),
                                 item.Conteudo.UnidadeConsumidora.Nome,
+                                item.Conteudo.UnidadeConsumidora.Instalacao,
                                 saldoAcumulado.ToString(),
                                 hist.ToString(),
-                                (saldoAcumulado / hist).ToFixed(2).ToString() // SALDO EM MESES
+                                (saldoAcumulado / hist).ToFixed(2).ToString(), // SALDO EM MESES
+                                item.Conteudo.Fatura.MesReferencia,
+                                item.InstalacaoId.Value.ToString()
                             )
                         );
                     }
@@ -519,8 +523,39 @@ void SaldoEmMeses(List<Dado> dados)
         .OrderBy(x => x.Item5)
         .ToList()
         .ForEach(
-            x => Console.WriteLine($"Fatura {x.Item1} | Saldo em meses: {x.Item5} | UC : {x.Item2}")
+            x =>
+                Console.WriteLine(
+                    $"Fatura {x.Item1} | Instalação: {x.Item3} | MesReferencia: {x.Item7}| Saldo em meses: {x.Item5} | UC : {x.Item2}"
+                )
         );
+
+    if (verificaComPRod)
+    {
+        bool isProdAnterior = _isprod;
+        _isprod = !_isprod;
+        var tokenOutraBase = await realizarLoginAsync();
+        var objetoOutraBase = await getFaturasAsync(tokenOutraBase);
+        var dadosOutraBase = objetoOutraBase?.Dados.ToList();
+
+        if (dadosOutraBase.Count > 0)
+        {
+            var ddd = faturasComMediaDeConsumoZerado
+                .Where(x => !dadosOutraBase.Any(l => l.InstalacaoId.Value.ToString() == x.Item3))
+                .ToList();
+            if (ddd.Any())
+            {
+                ddd.OrderBy(x => x.Item3)
+                    .ToList()
+                    .ForEach(
+                        x =>
+                            Console.WriteLine(
+                                $"Fatura: {x.Item1} | Instalacao : {x.Item3.PadRight(10, ' ')} | SALDO: {x.Item6} | UC : {x.Item2} "
+                            )
+                    );
+            }
+        }
+        _isprod = isProdAnterior;
+    }
 }
 static void pularLinha(int qtd = 1)
 {
