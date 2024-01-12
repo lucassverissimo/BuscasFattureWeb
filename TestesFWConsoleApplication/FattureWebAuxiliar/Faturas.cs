@@ -255,7 +255,7 @@ static void faturasMuc(List<Dado> dados)
     string faturas = string.Empty;
     foreach (var item in dados)
     {
-        if (item.Conteudo != null)
+        if (item.Conteudo != null && item.Conteudo.UnidadeConsumidora.CategoriaTensao == "BT")
         {
             if (item.Conteudo.Fatura != null)
             {
@@ -264,6 +264,7 @@ static void faturasMuc(List<Dado> dados)
                     && item.Conteudo.Fatura.Produtos.Count > 0
                 )
                 {
+                    List<(string, string)> faturasComMuc = new List<(string, string)>();
                     foreach (var produto in item.Conteudo.Fatura.Produtos)
                     {
                         if (
@@ -279,18 +280,20 @@ static void faturasMuc(List<Dado> dados)
                             ) && produto.DescricoesOriginais.ToList().Any(x => x.Contains("mUC"))
                         )
                         {
-                            faturas += item.Id + ", ";
-                            //break;
+                            faturasComMuc.Add((item.Id.ToString(), item.InstalacaoId.ToString()));
                         }
+                    }
+
+                    if (faturasComMuc.Count > 0)
+                    {
+                        faturasComMuc.ForEach(
+                            x => Console.WriteLine($"Fatura: {x.Item1} | Instalacao: {x.Item2}")
+                        );
                     }
                 }
             }
         }
     }
-
-    Console.WriteLine(
-        "Faturas com mUC: " + (string.IsNullOrEmpty(faturas) ? "NENHUMA FATURA" : faturas[..^2])
-    );
 }
 static void modelosFaturas(List<Dado> dados)
 {
