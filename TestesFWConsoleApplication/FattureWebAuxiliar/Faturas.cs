@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 const bool S = true;
 const bool N = false;
 
-bool _isprod = N;
+bool _isprod = S;
 
 // Build a config object, using env vars and JSON providers.
 IConfigurationRoot config = new ConfigurationBuilder()
@@ -126,7 +126,7 @@ while (continuar)
                     TributosNegativos(dados);
                     break;
                 case "6":
-                    await SaldoEmMeses(dados, verificaComPRod: false);
+                    await SaldoEmMeses(dados, verificaComPRod: true);
                     break;
                 default:
                     Console.WriteLine(" >>> OPÇÃO INVÁLIDA <<< ");
@@ -264,7 +264,8 @@ static void faturasMuc(List<Dado> dados)
                     && item.Conteudo.Fatura.Produtos.Count > 0
                 )
                 {
-                    List<(string, string)> faturasComMuc = new List<(string, string)>();
+                    List<(string, string, string)> faturasComMuc =
+                        new List<(string, string, string)>();
                     foreach (var produto in item.Conteudo.Fatura.Produtos)
                     {
                         if (
@@ -280,14 +281,20 @@ static void faturasMuc(List<Dado> dados)
                             ) && produto.DescricoesOriginais.ToList().Any(x => x.Contains("mUC"))
                         )
                         {
-                            faturasComMuc.Add((item.Id.ToString(), item.InstalacaoId.ToString()));
+                            string descricaoMuc = produto
+                                .DescricoesOriginais.ToList()
+                                .Where(x => x.Contains("mUC"))
+                                .FirstOrDefault();
+                            faturasComMuc.Add(
+                                (item.Id.ToString(), item.InstalacaoId.ToString(), descricaoMuc)
+                            );
                         }
                     }
 
                     if (faturasComMuc.Count > 0)
                     {
                         faturasComMuc.ForEach(
-                            x => Console.WriteLine($"Fatura: {x.Item1} | Instalacao: {x.Item2}")
+                            x => Console.WriteLine($"Fatura: {x.Item1} | Descricao: {x.Item3}")
                         );
                     }
                 }
