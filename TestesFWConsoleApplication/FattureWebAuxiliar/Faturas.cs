@@ -3,12 +3,13 @@ using System.Diagnostics.Metrics;
 using System.Text.Json;
 using FattureWebAuxiliar;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 const bool S = true;
 const bool N = false;
 
-bool _isprod = S;
+bool _isprod = N;
 
 // Build a config object, using env vars and JSON providers.
 IConfigurationRoot config = new ConfigurationBuilder()
@@ -65,6 +66,7 @@ while (continuar)
             4 - Mostrar Saldo Acumulado Maior Que Zero
             5 - Mostrar Tributos negativos
             6 - Mostrar Saldos Em Meses
+            7 - Alterar Instalação
         "
         );
         string entrada = Console.ReadLine();
@@ -128,6 +130,9 @@ while (continuar)
                 case "6":
                     await SaldoEmMeses(dados, verificaComPRod: true);
                     break;
+                case "7":
+                    await EditarInstalacao(dados);
+                    break;
                 default:
                     Console.WriteLine(" >>> OPÇÃO INVÁLIDA <<< ");
 
@@ -185,6 +190,21 @@ async Task<string?> realizarLoginAsync()
         return default;
     }
 }
+async Task editarInstalacao(string token, InstalacaoEditDto instalacaoEdit)
+{
+    var client = new HttpClient();
+    string urlEdit = $"https://api.fattureweb.com.br/instalacoes/{instalacaoEdit.Id}";
+    var request = new HttpRequestMessage(HttpMethod.Put, urlEdit);
+    request.Headers.Add("Fatture-AuthToken", token);
+    var json = JsonConvert.SerializeObject(instalacaoEdit);
+    var content = new StringContent(json, null, "application/json");
+    request.Content = content;
+    var response = await client.SendAsync(request);
+    Console.WriteLine($"INSTALAÇÃO {instalacaoEdit.Id}");
+    Console.WriteLine(await response.Content.ReadAsStringAsync());
+    pularLinha();
+}
+
 static async Task<Root?> getFaturasAsync(string token)
 {
     var clientFaturas = new HttpClient();
@@ -210,8 +230,38 @@ static async Task<Root?> getFaturasAsync(string token)
 
     return string.IsNullOrEmpty(contentResponseFaturas)
         ? null
-        : JsonSerializer.Deserialize<Root>(contentResponseFaturas);
+        : JsonConvert.DeserializeObject<Root>(contentResponseFaturas); //JsonSerializer.Deserialize<Root>(contentResponseFaturas);
 }
+
+static async Task<RootInstalacao?> GetInstalacoesAsync(string token)
+{
+    var clientInstalacoes = new HttpClient();
+    var requestInstalacoes = new HttpRequestMessage(
+        HttpMethod.Get,
+        "https://api.fattureweb.com.br/instalacoes?sort=distribuidora_sigla&order=asc&limit=9999"
+    );
+    requestInstalacoes.Headers.Add("Fatture-AuthToken", token);
+    requestInstalacoes.Headers.Add(
+        "Fatture-SearchFields",
+        "id, distribuidora_id, cliente_id, entidade_id, instalacao_id, status_webcrawlers_id, erro_suporte, data_criacao, data_atualizacao, data_agendamento, data_inicio, data_fim, num_faturas_encontradas, num_faturas_baixadas,data_inicio_leitura"
+    );
+    var content = new StringContent("", null, "application/json");
+    requestInstalacoes.Content = content;
+    var responseInstalacoes = await clientInstalacoes.SendAsync(requestInstalacoes);
+    responseInstalacoes.EnsureSuccessStatusCode();
+
+    var contentResponseInstalacoes = await responseInstalacoes.Content.ReadAsStringAsync();
+    if (!string.IsNullOrEmpty(contentResponseInstalacoes))
+    {
+        var dadosInstalacoes = JsonConvert.DeserializeObject<RootInstalacao>(
+            contentResponseInstalacoes
+        );
+
+        return dadosInstalacoes;
+    }
+    return null;
+}
+
 static void todosProdutos(List<Dado> dados)
 {
     Console.WriteLine(" ************************************************* ");
@@ -567,6 +617,30 @@ async Task SaldoEmMeses(List<Dado> dados, bool verificaComPRod)
         _isprod = isProdAnterior;
     }
 }
+
+async Task EditarInstalacao(List<Dado>? dados)
+{
+    Console.WriteLine(" ************************************************************* ");
+    Console.WriteLine(" *************** Editar Instalação *************** ");
+    Console.WriteLine(" ************************************************************* ");
+    pularLinha();
+
+    var instalacoes = await GetInstalacoesAsync(token);
+    var da = instalacoes.Dados?.ToList();
+    foreach (var inst in da)
+    {
+        if (!string.IsNullOrEmpty(inst.Id.ToString()))
+        {
+            var instalacao = new InstalacaoEditDto
+            {
+                Id = inst.Id.ToString(),
+                DataInicioLeitura = "2023-11-03T00:00:00-03:00"
+            };
+            await editarInstalacao(token, instalacao);
+        }
+    }
+}
+
 static void pularLinha(int qtd = 1)
 {
     for (int i = 0; i < qtd; i++)
