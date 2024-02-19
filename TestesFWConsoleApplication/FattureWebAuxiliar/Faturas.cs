@@ -1,4 +1,5 @@
 ﻿//#pragma warning disable CS8602
+using System.ComponentModel.Design;
 using System.Diagnostics.Metrics;
 using System.Text.Json;
 using FattureWebAuxiliar;
@@ -354,87 +355,129 @@ static void faturasMuc(List<Dado> dados)
 }
 static void modelosFaturas(List<Dado> dados)
 {
-    Console.WriteLine(" ************************************************* ");
-    Console.WriteLine(" **************** MODELOS FATURAS **************** ");
-    Console.WriteLine(" ************************************************* ");
-
-    var faturasModelo1 = new List<(string, string)>();
-    var faturasModelo2 = new List<(string, string)>();
-    var faturasSemModelo = new List<(string, string)>();
-
-    foreach (var item in dados)
+    Dado dadoComErro;
+    try
     {
-        if (item.Conteudo != null)
+        Console.WriteLine(" ************************************************* ");
+        Console.WriteLine(" **************** MODELOS FATURAS **************** ");
+        Console.WriteLine(" ************************************************* ");
+
+        var faturasModelo1 = new List<(string, string, string, string)>();
+        var faturasModelo2 = new List<(string, string, string, string)>();
+        var faturasModelo3 = new List<(string, string, string, string)>();
+
+        foreach (var item in dados)
         {
-            if (item.Conteudo.Fatura != null)
+            dadoComErro = item;
+            if (item.Conteudo != null)
             {
-                if (
-                    item.Conteudo.Fatura.Produtos != null
-                    && item.Conteudo.Fatura.Produtos.Count > 0
-                )
+                if (item.Conteudo.Fatura != null && item.Conteudo.Fatura.Produtos != null)
                 {
-                    if (
-                        item.Conteudo.Fatura.Produtos.Any(
-                            x =>
-                                x.Descricao.Equals(
-                                    "Consumo TE KWh",
-                                    StringComparison.CurrentCultureIgnoreCase
-                                )
-                        )
-                        && item.Conteudo.UnidadeConsumidora.CategoriaTensao == "BT"
-                    )
+                    var TemConsumoTeKwh = item.Conteudo.Fatura.Produtos.Any(
+                        x =>
+                            x.Descricao.Equals(
+                                "Consumo TE KWh",
+                                System.StringComparison.OrdinalIgnoreCase
+                            )
+                    );
+
+                    var TemConsumoKwhComValorSemImpostos = item.Conteudo.Fatura.Produtos.Any(
+                        x =>
+                            x.Descricao.Equals("Consumo kWh", StringComparison.OrdinalIgnoreCase)
+                            && x.ValorSemImpostos > 0
+                    );
+
+                    if (TemConsumoTeKwh)
                     {
                         faturasModelo1.Add(
                             (
                                 item.Id.HasValue ? item.Id.Value.ToString() : "NONE",
-                                item.Conteudo.UnidadeConsumidora.Nome
-                            )
-                        );
-                    }
-                    else if (
-                        !item.Conteudo.Fatura.Produtos.Any(
-                            x =>
-                                x.Descricao.Equals(
-                                    "Consumo TE KWh",
-                                    StringComparison.CurrentCultureIgnoreCase
-                                )
-                        )
-                        && item.Conteudo.UnidadeConsumidora.CategoriaTensao == "BT"
-                    )
-                    {
-                        faturasModelo2.Add(
-                            (
-                                item.Id.HasValue ? item.Id.Value.ToString() : "NONE",
-                                item.Conteudo.UnidadeConsumidora.Nome
+                                item.Conteudo.UnidadeConsumidora.Instalacao,
+                                item.Conteudo.UnidadeConsumidora.Nome,
+                                item.Conteudo.Fatura.MesReferencia
                             )
                         );
                     }
                     else
                     {
-                        faturasSemModelo.Add(
-                            (
-                                item.Id.HasValue ? item.Id.Value.ToString() : "NONE",
-                                item.Conteudo.UnidadeConsumidora.Nome
-                            )
-                        );
+                        if (TemConsumoKwhComValorSemImpostos)
+                        {
+                            faturasModelo2.Add(
+                                (
+                                    item.Id.HasValue ? item.Id.Value.ToString() : "NONE",
+                                    item.Conteudo.UnidadeConsumidora.Instalacao,
+                                    item.Conteudo.UnidadeConsumidora.Nome,
+                                    item.Conteudo.Fatura.MesReferencia
+                                )
+                            );
+                        }
+                        else
+                        {
+                            faturasModelo3.Add(
+                                (
+                                    item.Id.HasValue ? item.Id.Value.ToString() : "NONE",
+                                    item.Conteudo.UnidadeConsumidora.Instalacao,
+                                    item.Conteudo.UnidadeConsumidora.Nome,
+                                    item.Conteudo.Fatura.MesReferencia
+                                )
+                            );
+                        }
                     }
                 }
             }
         }
+
+        Console.WriteLine(" ************************************************* ");
+        Console.WriteLine("Modelo 1: " + faturasModelo1.Count);
+        Console.WriteLine("Modelo 2: " + faturasModelo2.Count);
+        Console.WriteLine("Modelo 3: " + faturasModelo3.Count);
+        Console.WriteLine(" ************************************************* ");
+        pularLinha();
+
+        Console.WriteLine(" Quer exibir as faturas? S/N");
+        string entrada = Console.ReadLine();
+
+        if (
+            !string.IsNullOrEmpty(entrada)
+            && entrada.Equals("S", StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            Console.WriteLine(" ************************************************* ");
+            Console.WriteLine(" *********************MODELO 1******************** ");
+            Console.WriteLine(" ************************************************* ");
+            faturasModelo1.ForEach(
+                x =>
+                    Console.WriteLine(
+                        $"Fatura {x.Item1} instalação {x.Item2} mesRef: {x.Item4} - UC: {x.Item3}"
+                    )
+            );
+            pularLinha();
+            Console.WriteLine(" ************************************************* ");
+            Console.WriteLine(" *********************MODELO 2******************** ");
+            Console.WriteLine(" ************************************************* ");
+            faturasModelo2.ForEach(
+                x =>
+                    Console.WriteLine(
+                        $"Fatura {x.Item1} instalação {x.Item2} mesRef: {x.Item4} - UC: {x.Item3}"
+                    )
+            );
+            pularLinha();
+            Console.WriteLine(" ************************************************* ");
+            Console.WriteLine(" *********************MODELO 3******************** ");
+            Console.WriteLine(" ************************************************* ");
+            faturasModelo3.ForEach(
+                x =>
+                    Console.WriteLine(
+                        $"Fatura {x.Item1} instalação {x.Item2} mesRef: {x.Item4} - UC: {x.Item3}"
+                    )
+            );
+            pularLinha();
+        }
     }
-
-    Console.WriteLine(
-        "Produto IGUAL a 'Consumo TE KWh' e categoria tensao IGUAL a 'BT': " + faturasModelo1.Count
-    );
-    faturasModelo1.ForEach(x => Console.WriteLine($"Fatura {x.Item1} - UC: {x.Item2}"));
-    Console.WriteLine(
-        "Produto diferente de 'Consumo TE KWh' e categoria tensao IGUAL a 'BT': "
-            + faturasModelo2.Count
-    );
-    faturasModelo2.ForEach(x => Console.WriteLine($"Fatura {x.Item1} - UC: {x.Item2}"));
-    Console.WriteLine("Sem nenhuma das condições acima: " + faturasSemModelo.Count);
-
-    faturasSemModelo.ForEach(x => Console.WriteLine($"Fatura {x.Item1} - UC: {x.Item2}"));
+    catch (Exception e)
+    {
+        Console.WriteLine($"Erro Fatal: {e.Message}");
+    }
 }
 
 void SaldosAcumulados(List<Dado> dados)
