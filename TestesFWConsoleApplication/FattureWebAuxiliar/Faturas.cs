@@ -1,7 +1,4 @@
 ﻿//#pragma warning disable CS8602
-using System.ComponentModel.Design;
-using System.Diagnostics.Metrics;
-using System.Text.Json;
 using FattureWebAuxiliar;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -68,6 +65,7 @@ while (continuar)
             5 - Mostrar Tributos negativos
             6 - Mostrar Saldos Em Meses
             7 - Alterar Instalação
+            8 - Filtro Aleatório
         "
         );
         string entrada = Console.ReadLine();
@@ -134,6 +132,9 @@ while (continuar)
                 case "7":
                     await EditarInstalacao(dados);
                     break;
+                case "8":
+                    await FiltroAleatorio(dados);
+                    break;
                 default:
                     Console.WriteLine(" >>> OPÇÃO INVÁLIDA <<< ");
 
@@ -150,6 +151,59 @@ while (continuar)
     Console.WriteLine(" >>> Pressione Qualquer Tecla <<< ");
     Console.ReadKey(false);
     Console.Clear();
+}
+
+async Task FiltroAleatorio(List<Dado>? dados)
+{
+    Console.WriteLine(" ************************************************* ");
+    Console.WriteLine(" *************** TODOS OS PRODUTOS *************** ");
+    Console.WriteLine(" ************************************************* ");
+
+    string produtos = string.Empty;
+    var produtosSelect = dados.Where(x => x.Conteudo.Fatura.Produtos != null && x.Conteudo.Fatura.Produtos.ToList().Exists(o => o.Quantidade.HasValue && o.Quantidade > 9999999999999)).ToList();
+    foreach (var item in dados)
+    {
+        if (item.Conteudo != null)
+        {
+            if (item.Conteudo.Fatura != null)
+            {
+                if (
+                    item.Conteudo.Fatura.Produtos != null
+                    && item.Conteudo.Fatura.Produtos.Count > 0
+                )
+                {
+                    foreach (var produto in item.Conteudo.Fatura.Produtos)
+                    {
+                        if (produto.Quantidade.HasValue && produto.Quantidade.Value > 9999999999999)
+                        {
+                            Console.WriteLine($"{item.Conteudo.FaturaId} - inst: {item.Conteudo.UnidadeConsumidora.Instalacao} - mesref: {item.Conteudo.Fatura.MesReferencia}");
+
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+int ContarNumerosAntesDaVirgula(double numero)
+{
+    // Converte o número para string usando a cultura invariável (para garantir o ponto decimal)
+    string numeroString = numero.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    // Encontra a posição do ponto decimal
+    int posicaoPontoDecimal = numeroString.IndexOf('.');
+
+    if (posicaoPontoDecimal == -1)
+    {
+        // Se não houver ponto decimal, retorna o comprimento da string (todo o número é antes da vírgula)
+        return numeroString.Length;
+    }
+    else
+    {
+        // Retorna o comprimento da parte antes do ponto decimal
+        return posicaoPontoDecimal;
+    }
 }
 
 #endregion
