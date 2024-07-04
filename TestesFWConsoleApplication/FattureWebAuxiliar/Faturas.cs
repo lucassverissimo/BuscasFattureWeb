@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 const bool S = true;
 const bool N = false;
 
-bool _isprod = N;
+bool _isprod = S;
 
 // Build a config object, using env vars and JSON providers.
 IConfigurationRoot config = new ConfigurationBuilder()
@@ -65,7 +65,7 @@ while (continuar)
             5 - Mostrar Tributos negativos
             6 - Mostrar Saldos Em Meses
             7 - Alterar Instalação
-            8 - Filtro Aleatório
+            8 - Mostrar faturas com produtos Adicional de bandeira ('Adic')
         "
         );
         string entrada = Console.ReadLine();
@@ -133,7 +133,7 @@ while (continuar)
                     await EditarInstalacao(dados);
                     break;
                 case "8":
-                    await FiltroAleatorio(dados);
+                    await ProdutosAdicaoBandeira(dados);
                     break;
                 default:
                     Console.WriteLine(" >>> OPÇÃO INVÁLIDA <<< ");
@@ -156,31 +156,159 @@ while (continuar)
 async Task FiltroAleatorio(List<Dado>? dados)
 {
     Console.WriteLine(" ************************************************* ");
-    Console.WriteLine(" *************** TODOS OS PRODUTOS *************** ");
+    Console.WriteLine(" *************** FILTRO *************** ");
     Console.WriteLine(" ************************************************* ");
 
     string produtos = string.Empty;
-    var produtosSelect = dados.Where(x => x.Conteudo.Fatura.Produtos != null && x.Conteudo.Fatura.Produtos.ToList().Exists(o => o.Quantidade.HasValue && o.Quantidade > 9999999999999)).ToList();
-    foreach (var item in dados)
-    {
-        if (item.Conteudo != null)
-        {
-            if (item.Conteudo.Fatura != null)
-            {
-                if (
-                    item.Conteudo.Fatura.Produtos != null
-                    && item.Conteudo.Fatura.Produtos.Count > 0
-                )
-                {
-                    foreach (var produto in item.Conteudo.Fatura.Produtos)
-                    {
-                        if (produto.Quantidade.HasValue && produto.Quantidade.Value > 9999999999999)
-                        {
-                            Console.WriteLine($"{item.Conteudo.FaturaId} - inst: {item.Conteudo.UnidadeConsumidora.Instalacao} - mesref: {item.Conteudo.Fatura.MesReferencia}");
 
-                        }
-                    }
+    var faturasFiltradas = dados.Where(x => x.Conteudo.Fatura.Produtos != null
+                                        && x.Conteudo.Fatura.Produtos.ToList().Exists(o => o.Descricao.Contains("Adic")))
+                        .ToList();
+    foreach (var item in faturasFiltradas)
+    {
+        if (item.Conteudo != null && item.Conteudo.Fatura != null)
+        {
+            var prds = item.Conteudo.Fatura.Produtos.ToList().Where(o => o.Descricao.Contains("Adic"));
+            DateTime dataMesRef = DateTime.Parse(item.Conteudo.Fatura.MesReferencia);
+            Console.WriteLine($"## Fatura: {item.Conteudo.FaturaId} - inst: {item.Conteudo.UnidadeConsumidora.Instalacao} - mesref: {dataMesRef.ToString("MMyyyy")}");
+            if (item.Conteudo.Fatura != null && prds.Any())
+            {
+                foreach (var pr in prds)
+                {
+                    Console.WriteLine($"- Produto: {pr.Descricao}");
                 }
+            }
+        }
+    }
+}
+
+async Task ProdutosAdicaoBandeira(List<Dado>? dados)
+{
+    Console.WriteLine(" ************************************************* ");
+    Console.WriteLine(" *************** FILTRO *************** ");
+    Console.WriteLine(" ************************************************* ");
+
+    string produtos = string.Empty;
+
+    var faturasFiltradas = dados.Where(x => x.Conteudo.Fatura.Produtos != null
+                                        && x.Conteudo.Fatura.Produtos.ToList().Exists(o => o.Descricao.Contains("Adic")))
+                        .ToList();
+    foreach (var item in faturasFiltradas)
+    {
+        if (item.Conteudo != null && item.Conteudo.Fatura != null)
+        {
+            var prdsWithAdic = item.Conteudo.Fatura.Produtos.ToList().Where(o => o.Descricao.Contains("Adic"));
+            var prds = item.Conteudo.Fatura.Produtos.ToList();
+            DateTime dataMesRef = DateTime.Parse(item.Conteudo.Fatura.MesReferencia);
+            Console.WriteLine($"## Fatura: {item.Conteudo.FaturaId} - inst: {item.Conteudo.UnidadeConsumidora.Instalacao} - mesref: {dataMesRef.ToString("MMyyyy")}");
+            if (item.Conteudo.Fatura != null && prdsWithAdic.Any())
+            {
+                foreach (var pr in prds)
+                {
+                    Console.WriteLine($">> Produto: {pr.Descricao}");
+                    Console.WriteLine($"- Quantidade: {pr.Quantidade}");
+                    Console.WriteLine($"- ValorTotal: {pr.ValorTotal}");
+                }
+
+                var AdicionalBandeiraAmarelaSemImpostos = prdsWithAdic.Where(x => x.Descricao.Contains("Amarela")).Sum(x => x.TarifaComImpostos);
+                var AdicionalBandeiraVermelhaP1SemImpostos = prdsWithAdic.Where(x => x.Descricao.Contains("Vermelha P1")).Sum(x => x.TarifaComImpostos);
+                var AdicionalBandeiraVermelhaP2SemImpostos = prdsWithAdic.Where(x => x.Descricao.Contains("Vermelha P2")).Sum(x => x.TarifaComImpostos);
+                var AdicionalBandeiraEscassezHidricaSemImpostos = prdsWithAdic.Where(x => x.Descricao.Contains("Escassez Hídrica")).Sum(x => x.TarifaComImpostos);
+
+                var adicionalBandeiraSemImpostos = AdicionalBandeiraAmarelaSemImpostos +
+                                                   AdicionalBandeiraVermelhaP1SemImpostos +
+                                                   AdicionalBandeiraVermelhaP2SemImpostos +
+                                                   AdicionalBandeiraEscassezHidricaSemImpostos;
+
+                double? adicionalBandeiraCommImpostosFornecida = 0.0;
+
+                double? consumo = prds.Where(x => x.Descricao.Contains("Consumo TE kWh")).Sum(x => x.Quantidade) +
+                                  prds.Where(x => x.Descricao.Contains("Consumo kWh")).Sum(x => x.Quantidade);
+                if (consumo > 0)
+                {
+                    double? adicionalBandeiraAmarelaComImpostosFornecida = 0.0;
+                    double? valorTotalBandeiraAmarela = prdsWithAdic.Where(x => x.Descricao.Contains("Amarela")).Sum(x => x.ValorTotal);
+                    if (valorTotalBandeiraAmarela > 0)
+                    {
+                        adicionalBandeiraAmarelaComImpostosFornecida = valorTotalBandeiraAmarela / consumo;
+                    }
+
+                    double? adicionalBandeiraVermelhaP1ComImpostosFornecida = 0.0;
+                    double? valorTotalBandeiraVermelhaP1 = prdsWithAdic.Where(x => x.Descricao.Contains("Vermelha P1")).Sum(x => x.ValorTotal);
+
+                    if (valorTotalBandeiraVermelhaP1 > 0)
+                    {
+                        adicionalBandeiraVermelhaP1ComImpostosFornecida = valorTotalBandeiraVermelhaP1 / consumo;
+                    }
+
+                    double? adicionalBandeiraVermelhaP2ComImpostosFornecida = 0.0;
+                    double? valorTotalBandeiraVermelhaP2 = prdsWithAdic.Where(x => x.Descricao.Contains("Vermelha P1")).Sum(x => x.ValorTotal);
+
+                    if (valorTotalBandeiraVermelhaP2 > 0)
+                    {
+                        adicionalBandeiraVermelhaP2ComImpostosFornecida = valorTotalBandeiraVermelhaP2 / consumo;
+                    }
+
+                    double? adicionalBandeiraEscassezHidricaComImpostosFornecida = 0.0;
+                    double? valorTotalBandeiraVermelhaEscassezHidrica = prdsWithAdic.Where(x => x.Descricao.Contains("Vermelha P1")).Sum(x => x.ValorTotal);
+
+                    if (valorTotalBandeiraVermelhaEscassezHidrica > 0)
+                    {
+                        adicionalBandeiraEscassezHidricaComImpostosFornecida = valorTotalBandeiraVermelhaEscassezHidrica / consumo;
+                    }
+
+                    adicionalBandeiraCommImpostosFornecida = adicionalBandeiraAmarelaComImpostosFornecida +
+                                                                 adicionalBandeiraVermelhaP1ComImpostosFornecida +
+                                                                 adicionalBandeiraVermelhaP2ComImpostosFornecida +
+                                                                 adicionalBandeiraEscassezHidricaComImpostosFornecida;
+
+
+                }
+
+                double? energiaInjetada = prds.Where(x => x.Descricao.Contains("Energia Injetada TE kWh") && x.Quantidade.HasValue).Sum(x => Math.Abs(x.Quantidade.Value)) +
+                                  prds.Where(x => x.Descricao.Contains("Energia Injetada kWh") && x.Quantidade.HasValue).Sum(x => Math.Abs(x.Quantidade.Value));
+
+                double? adicionalBandeiraCommImpostosInjetada = 0.0;
+                if (energiaInjetada > 0)
+                {
+                    double? adicionalBandeiraComImpostosInjetadaAmarela = 0.0;
+                    double? valorTotalBandeiraEnergiaInjetadaGDAmarela = prds.Where(x => x.Descricao.Contains("Bandeira Energia Injetada GD Amarela") && x.ValorTotal.HasValue).Sum(x => Math.Abs(x.ValorTotal.Value));
+                    if (valorTotalBandeiraEnergiaInjetadaGDAmarela > 0)
+                    {
+                        adicionalBandeiraComImpostosInjetadaAmarela = valorTotalBandeiraEnergiaInjetadaGDAmarela / energiaInjetada;
+                    }
+
+                    double? adicionalBandeiraComImpostosInjetadaVermelhaP1 = 0.0;
+                    double? valorTotalBandeiraEnergiaInjetadaGDVermelhaP1 = prds.Where(x => x.Descricao.Contains("Bandeira Energia Injetada GD Vermelha P1") && x.ValorTotal.HasValue).Sum(x => Math.Abs(x.ValorTotal.Value));
+                    if (valorTotalBandeiraEnergiaInjetadaGDVermelhaP1 > 0)
+                    {
+                        adicionalBandeiraComImpostosInjetadaVermelhaP1 = valorTotalBandeiraEnergiaInjetadaGDVermelhaP1 / energiaInjetada;
+                    }
+
+                    double? adicionalBandeiraComImpostosInjetadaVermelhaP2 = 0.0;
+                    double? valorTotalBandeiraEnergiaInjetadaGDVermelhaP2 = prds.Where(x => x.Descricao.Contains("Bandeira Energia Injetada GD Vermelha P2") && x.ValorTotal.HasValue).Sum(x => Math.Abs(x.ValorTotal.Value));
+                    if (valorTotalBandeiraEnergiaInjetadaGDVermelhaP2 > 0)
+                    {
+                        adicionalBandeiraComImpostosInjetadaVermelhaP2 = valorTotalBandeiraEnergiaInjetadaGDVermelhaP2 / energiaInjetada;
+                    }
+
+                    double? adicionalBandeiraComImpostosInjetadaEscassezHidrica = 0.0;
+                    double? valorTotalBandeiraEnergiaInjetadaGDEscassezHidrica = prds.Where(x => x.Descricao.Contains("Bandeira Energia Injetada GD Vermelha P2") && x.ValorTotal.HasValue).Sum(x => Math.Abs(x.ValorTotal.Value));
+                    if (valorTotalBandeiraEnergiaInjetadaGDEscassezHidrica > 0)
+                    {
+                        adicionalBandeiraComImpostosInjetadaEscassezHidrica = valorTotalBandeiraEnergiaInjetadaGDEscassezHidrica / energiaInjetada;
+                    }
+
+                    adicionalBandeiraCommImpostosInjetada = adicionalBandeiraComImpostosInjetadaAmarela +
+                                                            adicionalBandeiraComImpostosInjetadaVermelhaP1 +
+                                                            adicionalBandeiraComImpostosInjetadaVermelhaP2 +
+                                                            adicionalBandeiraComImpostosInjetadaEscassezHidrica;
+                }
+                pularLinha();
+                Console.WriteLine($"@ Adicional Bandeira - Sem Impostos (R$/kWh): {adicionalBandeiraSemImpostos}");
+                Console.WriteLine($"@ Adicional Bandeira - Com Impostos - Fornecida (R$/kWh): {adicionalBandeiraCommImpostosFornecida}");
+                Console.WriteLine($"@ Adicional Bandeira - Com Impostos - Injetada (R$/kWh): {adicionalBandeiraCommImpostosInjetada}");
+                pularLinha();
             }
         }
     }
@@ -263,6 +391,7 @@ async Task editarInstalacao(string token, InstalacaoEditDto instalacaoEdit)
 static async Task<Root?> getFaturasAsync(string token)
 {
     var clientFaturas = new HttpClient();
+    clientFaturas.Timeout = Timeout.InfiniteTimeSpan;
     var requestFaturas = new HttpRequestMessage(HttpMethod.Get, Constants.URLFW_FATURAS);
     requestFaturas.Headers.Add("Fatture-AuthToken", token);
     requestFaturas.Headers.Add(
