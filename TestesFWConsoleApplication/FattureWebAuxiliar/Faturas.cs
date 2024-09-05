@@ -1,26 +1,23 @@
 ﻿//#pragma warning disable CS8602
+#region usings
 using FattureWebAuxiliar;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
-// Build a config object, using env vars and JSON providers.
+#endregion
+#region pré-inicialização
 IConfigurationRoot config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
     .AddEnvironmentVariables()
     .Build();
 
-// Get values from the config given their key and their target type.
+
 var settings = config.GetRequiredSection("Settings").Get<Settings>();
 if (settings is null)
 {
     escreverLog("Não foi possível carregar as variáveis de ambiente!", false, true);
     return;
 }
-
-
-#region programa
-
 escreverLog("Realizar login!");
 var token = await realizarLoginAsync();
 if (string.IsNullOrEmpty(token))
@@ -38,11 +35,15 @@ if (dados == null)
     escreverLog("Faturas não encontradas.");
     return;
 }
+#endregion
+#region programa
+
 
 bool continuar = true;
 
 while (continuar)
 {
+    Console.Clear();
     try
     {
         escreverLog(
@@ -66,7 +67,6 @@ R - Recarregar Lista
 
         if (string.IsNullOrEmpty(entrada))
         {
-            Console.Clear();
             continue;
         }
 
@@ -76,7 +76,7 @@ R - Recarregar Lista
             continue;
         }
 
-        if (entrada == "P")
+        if (entrada.Equals("P", StringComparison.OrdinalIgnoreCase))
         {
             if (settings.TipoConta == TipoContaEnum.Prod)
             {
@@ -87,7 +87,7 @@ R - Recarregar Lista
             continue;
         }
 
-        if (entrada == "D")
+        if (entrada.Equals("D", StringComparison.OrdinalIgnoreCase))
         {
             if (settings.TipoConta == TipoContaEnum.Dev)
             {
@@ -98,7 +98,7 @@ R - Recarregar Lista
             continue;
         }
 
-        if (entrada == "Q")
+        if (entrada.Equals("Q", StringComparison.OrdinalIgnoreCase))
         {
             if (settings.TipoConta == TipoContaEnum.Qa)
             {
@@ -133,9 +133,9 @@ R - Recarregar Lista
     pularLinha(2);
     Console.WriteLine(" >>> Pressione Qualquer Tecla <<< ");
     Console.ReadKey(false);
-    Console.Clear();
 }
-
+#endregion
+#region Métodos
 void criarArquivoCsvFaturas()
 {
     string outputDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "output");
@@ -163,36 +163,18 @@ void criarArquivoCsvFaturas()
 
     escreverLog($"Dados foram escritos no arquivo: {filePath}", true, false);
 }
-
 async Task trocarBase()
 {
     escreverLog(" AGUARDE... TROCANDO DE BASE... ", false);
     token = await realizarLoginAsync();
     await carregarFaturas();
 }
-
 async Task carregarFaturas()
 {
     objeto = await GetFaturasPaginadoAsync();
     dados = objeto?.Dados.ToList();
     escreverLog("", false, true);
-    Console.Clear();
 }
-
-string getMenuBases()
-{
-    var options = new Dictionary<TipoContaEnum, string>
-    {
-        { TipoContaEnum.Prod, "P - Mudar para PRODUÇÃO" },
-        { TipoContaEnum.Dev, "D - Mudar para DEV" },
-        { TipoContaEnum.Qa, "Q - Mudar para QA" }
-    };
-
-    return string.Join("\n", options
-        .Where(opt => settings.TipoConta != opt.Key)
-        .Select(opt => opt.Value));
-}
-
 async Task<string?> realizarLoginAsync()
 {
     var clientToken = new HttpClient();
@@ -281,12 +263,24 @@ async Task<Root?> GetFaturasPaginadoAsync()
 
     return retorno;
 }
+string getMenuBases()
+{
+    var options = new Dictionary<TipoContaEnum, string>
+    {
+        { TipoContaEnum.Prod, "P - Mudar para PRODUÇÃO" },
+        { TipoContaEnum.Dev, "D - Mudar para DEV" },
+        { TipoContaEnum.Qa, "Q - Mudar para QA" }
+    };
+
+    return string.Join("\n", options
+        .Where(opt => settings.TipoConta != opt.Key)
+        .Select(opt => opt.Value));
+}
 void pularLinha(int qtd = 1)
 {
     for (int i = 0; i < qtd; i++)
         escreverLog("\n", false);
 }
-
 void escreverLog(string msg, bool withDate = true, bool withReadKey = false)
 {
     if (withDate)

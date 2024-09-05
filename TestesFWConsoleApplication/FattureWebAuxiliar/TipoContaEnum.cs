@@ -4,7 +4,7 @@ namespace FattureWebAuxiliar
 {
     public enum TipoContaEnum : int
     {
-        [Description("PRODUÇÃO")]
+        [Description("PRODUCAO")]
         Prod = 0,
         [Description("DEV")]
         Dev = 1,
