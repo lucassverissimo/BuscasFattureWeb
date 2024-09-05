@@ -2,10 +2,13 @@
 ```json
 {
   "Settings": {
+    "TipoConta": "",
     "UsuarioProducao": "",
     "SenhaProducao": "",
-    "UsuarioTeste": "",
-    "SenhaTeste": ""
+    "UsuarioDev": "",
+    "SenhaDev": "",
+    "UsuarioQa": "",
+    "SenhaQa": ""
   }
 }
 ```
