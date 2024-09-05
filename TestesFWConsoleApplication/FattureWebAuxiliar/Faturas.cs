@@ -4,11 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-const bool S = true;
-const bool N = false;
-
-bool _isprod = S;
-
 // Build a config object, using env vars and JSON providers.
 IConfigurationRoot config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
@@ -152,7 +147,7 @@ void criarArquivoCsvFaturas()
 
     string timestamp = DateTime.Now.ToString("ddMMyyyyHHmmss");
 
-    string fileName = $"faturasPROD_{timestamp}.csv";
+    string fileName = $"faturas{settings.TipoConta.GetEnumDescription()}_{timestamp}.csv";
     string filePath = Path.Combine(outputDir, fileName);
 
     using (StreamWriter writer = new StreamWriter(filePath))
