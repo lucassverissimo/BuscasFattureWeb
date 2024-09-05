@@ -1,22 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Newtonsoft.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace FattureWebAuxiliar;
 
 public record BandeirasTarifaria(
-    [property: JsonProperty("dias")] [property: JsonPropertyName("dias")] double? Dias,
-    [property: JsonProperty("nome")] [property: JsonPropertyName("nome")] string Nome
+    [property: JsonProperty("dias")][property: JsonPropertyName("dias")] double? Dias,
+    [property: JsonProperty("nome")][property: JsonPropertyName("nome")] string Nome
 );
 
 public record Composicao(
-    [property: JsonProperty("energia")] [property: JsonPropertyName("energia")] double? Energia,
-    [property: JsonProperty("encargos")] [property: JsonPropertyName("encargos")] double? Encargos,
-    [property: JsonProperty("tributos")] [property: JsonPropertyName("tributos")] double? Tributos,
+    [property: JsonProperty("energia")][property: JsonPropertyName("energia")] double? Energia,
+    [property: JsonProperty("encargos")][property: JsonPropertyName("encargos")] double? Encargos,
+    [property: JsonProperty("tributos")][property: JsonPropertyName("tributos")] double? Tributos,
     [property: JsonProperty("transmissao")]
     [property: JsonPropertyName("transmissao")]
         double? Transmissao,
@@ -26,9 +21,9 @@ public record Composicao(
 );
 
 public record Conteudo(
-    [property: JsonProperty("fatura")] [property: JsonPropertyName("fatura")] Fatura Fatura,
-    [property: JsonProperty("outros")] [property: JsonPropertyName("outros")] Outros Outros,
-    [property: JsonProperty("fatura_id")] [property: JsonPropertyName("fatura_id")] int? FaturaId,
+    [property: JsonProperty("fatura")][property: JsonPropertyName("fatura")] Fatura Fatura,
+    [property: JsonProperty("outros")][property: JsonPropertyName("outros")] Outros Outros,
+    [property: JsonProperty("fatura_id")][property: JsonPropertyName("fatura_id")] int? FaturaId,
     [property: JsonProperty("data_insercao")]
     [property: JsonPropertyName("data_insercao")]
         string DataInsercao,
@@ -47,7 +42,7 @@ public record Conteudo(
 );
 
 public record Dado(
-    [property: JsonProperty("id")] [property: JsonPropertyName("id")] int? Id,
+    [property: JsonProperty("id")][property: JsonPropertyName("id")] int? Id,
     [property: JsonProperty("instalacao_id")]
     [property: JsonPropertyName("instalacao_id")]
         int? InstalacaoId,
@@ -57,7 +52,7 @@ public record Dado(
     [property: JsonProperty("status_fatura_id")]
     [property: JsonPropertyName("status_fatura_id")]
         int? StatusFaturaId,
-    [property: JsonProperty("status")] [property: JsonPropertyName("status")] bool? Status,
+    [property: JsonProperty("status")][property: JsonPropertyName("status")] bool? Status,
     [property: JsonProperty("data_criacao")]
     [property: JsonPropertyName("data_criacao")]
         DateTime? DataCriacao,
@@ -91,7 +86,7 @@ public record Dado(
     [property: JsonProperty("valor_total")]
     [property: JsonPropertyName("valor_total")]
         double? ValorTotal,
-    [property: JsonProperty("conteudo")] [property: JsonPropertyName("conteudo")] Conteudo Conteudo
+    [property: JsonProperty("conteudo")][property: JsonPropertyName("conteudo")] Conteudo Conteudo
 );
 
 public record DevolucaoGeracao(
@@ -137,7 +132,7 @@ public record Eusd(
 );
 
 public record Fatura(
-    [property: JsonProperty("leitura")] [property: JsonPropertyName("leitura")] Leitura Leitura,
+    [property: JsonProperty("leitura")][property: JsonPropertyName("leitura")] Leitura Leitura,
     [property: JsonProperty("produtos")]
     [property: JsonPropertyName("produtos")]
         IReadOnlyList<Produto> Produtos,
@@ -192,7 +187,7 @@ public record Fic(
 );
 
 public record HistoricoFaturamento(
-    [property: JsonProperty("data")] [property: JsonPropertyName("data")] string Data,
+    [property: JsonProperty("data")][property: JsonPropertyName("data")] string Data,
     [property: JsonProperty("periodo_dias")]
     [property: JsonPropertyName("periodo_dias")]
         int? PeriodoDias,
@@ -205,11 +200,11 @@ public record HistoricoFaturamento(
 );
 
 public record Indicadores(
-    [property: JsonProperty("dic")] [property: JsonPropertyName("dic")] Dic Dic,
-    [property: JsonProperty("fic")] [property: JsonPropertyName("fic")] Fic Fic,
-    [property: JsonProperty("dmic")] [property: JsonPropertyName("dmic")] Dmic Dmic,
-    [property: JsonProperty("eusd")] [property: JsonPropertyName("eusd")] Eusd Eusd,
-    [property: JsonProperty("dicri")] [property: JsonPropertyName("dicri")] Dicri Dicri,
+    [property: JsonProperty("dic")][property: JsonPropertyName("dic")] Dic Dic,
+    [property: JsonProperty("fic")][property: JsonPropertyName("fic")] Fic Fic,
+    [property: JsonProperty("dmic")][property: JsonPropertyName("dmic")] Dmic Dmic,
+    [property: JsonProperty("eusd")][property: JsonPropertyName("eusd")] Eusd Eusd,
+    [property: JsonProperty("dicri")][property: JsonPropertyName("dicri")] Dicri Dicri,
     [property: JsonProperty("mes_referencia")]
     [property: JsonPropertyName("mes_referencia")]
         string MesReferencia
@@ -237,7 +232,7 @@ public record Leitura(
 );
 
 public record Leitura2(
-    [property: JsonProperty("posto")] [property: JsonPropertyName("posto")] string Posto,
+    [property: JsonProperty("posto")][property: JsonPropertyName("posto")] string Posto,
     [property: JsonProperty("valor_atual")]
     [property: JsonPropertyName("valor_atual")]
         double? ValorAtual,
@@ -277,7 +272,7 @@ public record Medidore(
 );
 
 public record Outros(
-    [property: JsonProperty("fisco")] [property: JsonPropertyName("fisco")] string Fisco,
+    [property: JsonProperty("fisco")][property: JsonPropertyName("fisco")] string Fisco,
     [property: JsonProperty("aviso_corte")]
     [property: JsonPropertyName("aviso_corte")]
         bool? AvisoCorte,
@@ -302,7 +297,7 @@ public record Outros(
     [property: JsonProperty("serie_nota_fiscal")]
     [property: JsonPropertyName("serie_nota_fiscal")]
         string SerieNotaFiscal,
-    [property: JsonProperty("cfop")] [property: JsonPropertyName("cfop")] string Cfop,
+    [property: JsonProperty("cfop")][property: JsonPropertyName("cfop")] string Cfop,
     [property: JsonProperty("roteiro_leitura")]
     [property: JsonPropertyName("roteiro_leitura")]
         string RoteiroLeitura
@@ -339,16 +334,17 @@ public record Produto(
 );
 
 public record Root(
-    [property: JsonProperty("status")] [property: JsonPropertyName("status")] string Status,
-    [property: JsonProperty("mensagem")] [property: JsonPropertyName("mensagem")] string Mensagem,
+    [property: JsonProperty("status")][property: JsonPropertyName("status")] string Status,
+    [property: JsonProperty("mensagem")][property: JsonPropertyName("mensagem")] string Mensagem,
     [property: JsonProperty("dados")]
     [property: JsonPropertyName("dados")]
-        IReadOnlyList<Dado> Dados
-) { }
+        List<Dado> Dados
+)
+{ }
 
 public record SaldosGeracao(
-    [property: JsonProperty("posto")] [property: JsonPropertyName("posto")] string Posto,
-    [property: JsonProperty("valor")] [property: JsonPropertyName("valor")] double? Valor,
+    [property: JsonProperty("posto")][property: JsonPropertyName("posto")] string Posto,
+    [property: JsonProperty("valor")][property: JsonPropertyName("valor")] double? Valor,
     [property: JsonProperty("saldo_recebido")]
     [property: JsonPropertyName("saldo_recebido")]
         double? SaldoRecebido,
@@ -358,19 +354,19 @@ public record SaldosGeracao(
 );
 
 public record Tributo(
-    [property: JsonProperty("nome")] [property: JsonPropertyName("nome")] string Nome,
-    [property: JsonProperty("valor")] [property: JsonPropertyName("valor")] double? Valor,
-    [property: JsonProperty("taxa")] [property: JsonPropertyName("taxa")] double? Taxa,
+    [property: JsonProperty("nome")][property: JsonPropertyName("nome")] string Nome,
+    [property: JsonProperty("valor")][property: JsonPropertyName("valor")] double? Valor,
+    [property: JsonProperty("taxa")][property: JsonPropertyName("taxa")] double? Taxa,
     [property: JsonProperty("base_calculo")]
     [property: JsonPropertyName("base_calculo")]
         double? BaseCalculo
 );
 
 public record UnidadeConsumidora(
-    [property: JsonProperty("nome")] [property: JsonPropertyName("nome")] string Nome,
-    [property: JsonProperty("cpf_cnpj")] [property: JsonPropertyName("cpf_cnpj")] string CpfCnpj,
-    [property: JsonProperty("endereco")] [property: JsonPropertyName("endereco")] string Endereco,
-    [property: JsonProperty("subgrupo")] [property: JsonPropertyName("subgrupo")] string Subgrupo,
+    [property: JsonProperty("nome")][property: JsonPropertyName("nome")] string Nome,
+    [property: JsonProperty("cpf_cnpj")][property: JsonPropertyName("cpf_cnpj")] string CpfCnpj,
+    [property: JsonProperty("endereco")][property: JsonPropertyName("endereco")] string Endereco,
+    [property: JsonProperty("subgrupo")][property: JsonPropertyName("subgrupo")] string Subgrupo,
     [property: JsonProperty("instalacao")]
     [property: JsonPropertyName("instalacao")]
         string Instalacao,
